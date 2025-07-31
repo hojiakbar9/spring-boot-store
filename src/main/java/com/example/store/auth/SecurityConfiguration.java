@@ -1,5 +1,6 @@
 package com.example.store.auth;
 
+import com.example.store.common.SecurityRules;
 import com.example.store.users.Role;
 import com.example.store.users.UserServiceImpl;
 import lombok.AllArgsConstructor;
@@ -21,12 +22,15 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
 public class SecurityConfiguration {
     private final UserServiceImpl userService;
     private JwtAuthenticationFilter jwtFilter;
+    private final List<SecurityRules>  securityRules;
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -52,13 +56,10 @@ public class SecurityConfiguration {
         return http
                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(c-> c
-                        .requestMatchers("/carts/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                        .requestMatchers(HttpMethod.POST,"auth/**").permitAll()
-                        .requestMatchers("admin/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers(HttpMethod.POST ,"/checkout/webhook").permitAll()
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(c -> {
+                    securityRules.forEach(r -> r.configure(c));
+                    c.anyRequest().authenticated();
+                })
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(c -> {
                     c.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
