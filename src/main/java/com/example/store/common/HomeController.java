@@ -17,8 +17,9 @@ public class HomeController {
         - GET    /products   : List all products
         - GET    /orders     : List all orders
         - POST   /orders     : Create a new order
-
+       \s
         For full API documentation, visit: https://spring-boot-store-production-6ce7.up.railway.app/swagger-ui.html
-        """;
+        PS: For testing the endpoints, Postman app is recommended\s
+       \s""";
     }
 }
